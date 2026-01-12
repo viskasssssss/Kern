@@ -11,3 +11,6 @@ build/
 
 # OS
 .DS_Store
+
+# Build directory (ignore everything inside)
+build/
