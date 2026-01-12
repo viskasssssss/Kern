@@ -1,16 +1,31 @@
-# build artifacts
+# Build output
 build/
-*.exe
-*.obj
+bin/
+out/
+
+# Object files
 *.o
-*.dll
+*.obj
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Libraries
 *.lib
+*.a
+*.dll
+*.so
+*.dylib
 
 # VS Code
 .vscode/
 
 # OS
 .DS_Store
+Thumbs.db
 
-# Build directory (ignore everything inside)
-build/
+# Testing
+
+src/test.cpp
