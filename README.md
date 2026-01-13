@@ -5,6 +5,18 @@ It provides a clean API for drawing shapes, handling input, working with shaders
 
 Kern is designed for **learning, prototyping, and rapid development** while still being fast and flexible.
 
+## Getting Started
+
+```bash
+git clone https://github.com/viskasssssss/Kern
+cd kern
+mkdir build && cd build
+cmake ..
+cmake --build .
+```
+
+> Requires: C++20, OpenGL 3.3+, GLFW
+
 ---
 
 ## Features
@@ -80,6 +92,12 @@ int main() {
     }
 }
 ```
+
+## Roadmap
+- [ ] Text rendering
+- [ ] Multiple windows
+- [ ] Vulkan backend
+- [ ] DirectX backend
 
 # API
 
