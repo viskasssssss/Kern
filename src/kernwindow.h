@@ -7,13 +7,15 @@
 #include "utils/vectors.h"
 #include "backends/OpenGL/openglrenderer.h"
 
+#include "utils/inputs.h"
+
 namespace kern
 {
     enum class GraphicsAPI
     {
         OpenGL,
-        Vulkan,
-        DirectX12
+        // Vulkan, // TODO
+        // DirectX12
     };
 
     class Window
@@ -34,6 +36,8 @@ namespace kern
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
                 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+                cast("using: OpenGL Version 3.3");
             }
 
             this->window = glfwCreateWindow(width, height, header.c_str(), nullptr, nullptr);
@@ -47,6 +51,7 @@ namespace kern
             glfwMakeContextCurrent(window);
 
             // Creating renderer
+            cast("Creating Renderer...");
             if (graphics == GraphicsAPI::OpenGL)
             {
                 if (!gladLoadGL())
@@ -81,6 +86,14 @@ namespace kern
             if (isOpen() && renderer) {
                 renderer->clear();
             }
+
+            // Sample current key states
+            for (int i = 0; i < KEY_COUNT; i++)
+            {
+                m_prevKeys[i] = m_currKeys[i];
+                m_currKeys[i] = window && (glfwGetKey(window, i) == GLFW_PRESS);
+            }
+
             glfwPollEvents();
 
             double currentTime = glfwGetTime();
@@ -176,6 +189,15 @@ namespace kern
             return 0.0f;
         }
 
+        float getTime() const
+        {
+            if (isOpen() && window)
+            {
+                return glfwGetTime();
+            }
+            return 0.0f;
+        }
+
         void clearColor(Color color)
         {
             clearColor(color.r, color.g, color.b, color.a);
@@ -184,6 +206,113 @@ namespace kern
         bool isOpen() const
         {
             return window && !glfwWindowShouldClose(window);
+        }
+    
+        void close()
+        {
+            if (window)
+            {
+                glfwSetWindowShouldClose(window, GLFW_TRUE);
+            }
+        }
+
+        // Check if a key is currently pressed
+        bool isKeyPressed(Key key) const
+        {
+            int k = static_cast<int>(key);
+            return k < KEY_COUNT && m_currKeys[k];
+        }
+
+        // Get all keys currently pressed
+        std::vector<Key> getPressedKeys() const
+        {
+            std::vector<Key> pressed;
+            for (int i = 0; i < KEY_COUNT; i++)
+            {
+                if (m_currKeys[i])
+                {
+                    // Optional: validate that i is a known key (you can skip invalid ones)
+                    pressed.push_back(static_cast<Key>(i));
+                }
+            }
+            return pressed;
+        }
+
+        // Check if a key was just released this frame
+        bool wasKeyReleased(Key key) const
+        {
+            int k = static_cast<int>(key);
+            if (k >= KEY_COUNT) return false;
+            return m_prevKeys[k] && !m_currKeys[k];
+        }
+
+        // Optional: detect if key was just pressed (edge detection)
+        bool wasKeyPressed(Key key) const
+        {
+            int k = static_cast<int>(key);
+            if (k >= KEY_COUNT) return false;
+            return !m_prevKeys[k] && m_currKeys[k];
+        }
+
+        Vector2 getMousePosition() const
+        {
+            if (window)
+            {
+                double x, y;
+                glfwGetCursorPos(window, &x, &y);
+                return {static_cast<float>(x), static_cast<float>(y)};
+            }
+            return {0, 0};
+        }
+
+        bool isMouseButtonPressed(MouseButton button) const
+        {
+            if (window)
+            {
+                return glfwGetMouseButton(window, static_cast<int>(button)) == GLFW_PRESS;
+            }
+            return false;
+        }
+
+        int getWidth() const
+        {
+            if (window)
+            {
+                int width, height;
+                glfwGetWindowSize(window, &width, &height);
+                return width;
+            }
+            return 0;
+        }
+
+        int getHeight() const
+        {
+            if (window)
+            {
+                int width, height;
+                glfwGetWindowSize(window, &width, &height);
+                return height;
+            }
+            return 0;
+        }
+
+        void getSize(int& width, int& height) const
+        {
+            if (window)
+            {
+                glfwGetWindowSize(window, &width, &height);
+            }
+        }
+
+        Vector2 getSize() const
+        {
+            if (window)
+            {
+                int width, height;
+                glfwGetWindowSize(window, &width, &height);
+                return {static_cast<float>(width), static_cast<float>(height)};
+            }
+            return {0, 0};
         }
 
     private:
@@ -194,6 +323,11 @@ namespace kern
         double previousTime;
         int frameCount = 0;
         int FPS;
+
+        // For key state tracking
+        static constexpr int KEY_COUNT = 512;
+        bool m_prevKeys[KEY_COUNT] = {false};
+        bool m_currKeys[KEY_COUNT] = {false};
     };
 
 

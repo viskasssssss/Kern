@@ -7,9 +7,12 @@
 #include "config.h"
 #include "utils/files.h"
 #include "utils/vertexlayout.h"
+#include "utils/textures.h"
+#include "kernmath.h"
 
 namespace kern
 {
+    class Texture;
 
     class Shader
     {
@@ -22,6 +25,9 @@ namespace kern
         virtual void setFloat(const std::string& name, float value) = 0;
         virtual void setVec2(const std::string& name, Vector2 value) = 0;
         virtual void setVec3(const std::string& name, Vector3 value) = 0;
+        virtual void setSample2D(const std::string& name, const Texture& texture) = 0;
+        virtual void setMat4(const std::string& name, const Mat4& matrix) = 0;
+        virtual void setMat3(const std::string& name, const Mat3& matrix) = 0;
 
         virtual unsigned int getId() const = 0;
     };
@@ -42,6 +48,10 @@ namespace kern
             }
 
             id = glCreateProgram();
+            if (!id) {
+                cast("glCreateProgram returned 0", kern::DebugLevel::Error);
+                return;
+            }
             glAttachShader(id, vertexShader);
             glAttachShader(id, fragmentShader);
             glLinkProgram(id);
@@ -113,14 +123,29 @@ namespace kern
 
         void bind() const override
         {
+            GLenum error;
+            while ((error = glGetError()) != GL_NO_ERROR) {
+                // Just clear
+            }
+
             if (!id) {
                 cast("Trying to bind shader with id=0!", kern::DebugLevel::Error);
                 return;
             }
 
+            GLint linked = 0;
+            glGetProgramiv(id, GL_LINK_STATUS, &linked);
+            if (linked == GL_FALSE) {
+                cast("Shader program " + std::to_string(id) + " is not linked! Cannot use.", kern::DebugLevel::Error);
+                return;
+            }
+
             glUseProgram(id);
+
             GLenum err = glGetError();
-            if (err != GL_NO_ERROR) {
+            if (err == GL_INVALID_OPERATION) {
+                cast("glUseProgram: GL_INVALID_OPERATION. Possible reasons: program not linked, or context not current.", DebugLevel::Error);
+            } else if (err != GL_NO_ERROR) {
                 cast("glUseProgram error: " + std::to_string(err) + " with ID: " + std::to_string(id), DebugLevel::Error);
             }
         }
@@ -133,18 +158,48 @@ namespace kern
 
         void setFloat(const std::string& name, float value) override
         {
-            glUniform1f(glGetUniformLocation(id, name.c_str()), value);
+            bind();
+            GLint loc = getLocation(name);
+            glUniform1f(loc, value);
         }
 
         void setVec2(const std::string& name, Vector2 value) override
         {
-            glUniform2f(glGetUniformLocation(id, name.c_str()), value.x, value.y);
+            bind();
+            GLint loc = getLocation(name);
+            glUniform2f(loc, value.x, value.y);
         }
 
         void setVec3(const std::string& name, Vector3 value) override
         {
-            glUniform3f(glGetUniformLocation(id, name.c_str()), value.x, value.y, value.z);
+            bind();
+            GLint loc = getLocation(name);
+            glUniform3f(loc, value.x, value.y, value.z);
         }
+
+        void setMat4(const std::string& name, const Mat4& matrix) override {
+            bind();
+            GLint loc = getLocation(name);
+            glUniformMatrix4fv(
+                loc,
+                1,
+                GL_FALSE,
+                glm::value_ptr(matrix)
+            );
+        }
+
+        void setMat3(const std::string& name, const Mat3& matrix)override {
+            bind();
+            GLint loc = getLocation(name);
+            glUniformMatrix3fv(
+                loc,
+                1, 
+                GL_FALSE, 
+                glm::value_ptr(matrix)
+            );
+        }
+
+        void setSample2D(const std::string& name, const Texture& texture) override;
 
         unsigned int getId() const override { return id; }
 
@@ -154,6 +209,20 @@ namespace kern
     private:
         VertexLayout vertexLayout;
         GLuint id;
+
+        GLint getLocation(const std::string& name) const
+        {
+            if (id == 0) 
+            {
+                return -1;
+            }
+            GLint loc = glGetUniformLocation(id, name.c_str());
+            if (loc == -1) {
+                cast("Warning: Uniform '" + name + "' not found or optimized out", DebugLevel::Warning);
+                return -1;
+            }
+            return loc;
+        }
 
         GLuint compileShader(const std::string& source, GLenum type)
         {

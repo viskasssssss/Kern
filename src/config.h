@@ -29,7 +29,7 @@ inline void cast(std::string msg, kern::DebugLevel level)
         }
         else if ((debug == kern::DebugLevel::Everything && level == kern::DebugLevel::Everything))
         {
-            std::cout << "[KERN] " << msg << std::endl;
+            std::cout << "[KERN] [INFO] " << msg << std::endl;
         }
     }
 }
@@ -40,7 +40,7 @@ inline void cast(std::string msg)
     {
         if (debug == kern::DebugLevel::Everything)
         {
-            std::cout << "[KERN] " << msg << std::endl;
+            std::cout << "[KERN] [INFO] " << msg << std::endl;
         }
     }
 }

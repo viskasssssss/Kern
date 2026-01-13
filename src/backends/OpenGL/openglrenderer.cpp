@@ -22,6 +22,7 @@ OpenGLRenderer::OpenGLRenderer(GLFWwindow* window, int width, int height)
       triProgram(
           []() -> kern::OpenGLShaderProgram
           {
+              cast("Loading built-in shaders...");
               std::string triVertexSource = kern::readFile("src/shaders/OpenGL/tri.vert");
               std::string triFragmentSource = kern::readFile("src/shaders/OpenGL/tri.frag");
 
@@ -38,8 +39,10 @@ OpenGLRenderer::OpenGLRenderer(GLFWwindow* window, int width, int height)
           }()
       )
 {
-    cast("Initializing Renderer...");
     glViewport(0, 0, width, height);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     if (!triProgram.getId()) {
         cast("Shader program failed to link!", kern::DebugLevel::Error);
@@ -50,7 +53,7 @@ void OpenGLRenderer::clear()
 {
     if (window)
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 }
 

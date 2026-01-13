@@ -38,6 +38,7 @@ private:
 
 // Helper to register common types
 template<> VertexLayout& VertexLayout::add<Vector2>(const std::string& name);
+template<> VertexLayout& VertexLayout::add<Vector3>(const std::string& name);
 template<> VertexLayout& VertexLayout::add<float>(const std::string& name);
 
 } // namespace kern

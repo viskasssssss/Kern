@@ -28,4 +28,8 @@ Thumbs.db
 
 # Testing
 
+Makefile*
+
 src/test.cpp
+testShaders/
+testTextures/

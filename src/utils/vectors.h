@@ -17,6 +17,7 @@ struct Vector2 {
     constexpr Vector2 operator-(const Vector2& o) const noexcept { return {x - o.x, y - o.y}; }
     constexpr Vector2 operator*(float s) const noexcept { return {x * s, y * s}; }
     constexpr Vector2 operator/(float s) const noexcept { return {x / s, y / s}; }
+    constexpr Vector2 operator/(const Vector2& o) const noexcept { return {x / o.x, y / o.y}; }
     constexpr bool operator==(const Vector2& o) const noexcept { return x == o.x && y == o.y; }
 
     // Fixed compound assignment operators
@@ -90,5 +91,12 @@ struct Vector3 {
     bool isZero(float eps = 1e-6f) const noexcept;
 
 };
+
+inline Vector2 screenToNDC(Vector2 screen, Vector2 size) {
+    return Vector2(
+        (screen.x / size.x) * 2.0f - 1.0f,
+        -(screen.y / size.y) * 2.0f + 1.0f
+    );
+}
 
 } // namespace kern

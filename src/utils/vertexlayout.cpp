@@ -30,6 +30,13 @@ kern::VertexLayout& kern::VertexLayout::add<kern::Vector2>(const std::string& na
 }
 
 template<>
+kern::VertexLayout& kern::VertexLayout::add<kern::Vector3>(const std::string& name) {
+    elements.push_back({ name, VertexElementType::Float3, stride, static_cast<int>(elements.size()) });
+    stride += sizeof(kern::Vector3);
+    return *this;
+}
+
+template<>
 kern::VertexLayout& kern::VertexLayout::add<float>(const std::string& name) {
     elements.push_back({ name, VertexElementType::Float, stride, static_cast<int>(elements.size()) });
     stride += sizeof(float);
