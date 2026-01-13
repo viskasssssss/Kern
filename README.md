@@ -20,6 +20,8 @@ Kern is designed for **learning, prototyping, and rapid development** while stil
 
 ## Quick Start (2D Example)
 
+![Triangle](examples/triangle.png)
+
 ```cpp
 #include "kern.h"
 
@@ -47,6 +49,8 @@ int main() {
 }
 ```
 ## 3D Example
+
+![Rotating Cube](examples/cube.png)
 
 ``` cpp
 #include "kern.h"
