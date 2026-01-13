@@ -1,4 +1,4 @@
-<img src="examples/kern-logo.png" alt="Kern Logo" width="400" height="250"/>
+<img src="assets/kern-logo.png" alt="Kern Logo" width="400" height="250"/>
 
 **Kern** is a lightweight and easy-to-use C++ library for 2D and 3D graphics rendering.  
 It provides a clean API for drawing shapes, handling input, working with shaders and textures, and using matrices — all without dealing with low-level OpenGL, Vulkan, or DirectX details.
@@ -20,7 +20,7 @@ Kern is designed for **learning, prototyping, and rapid development** while stil
 
 ## Quick Start (2D Example)
 
-![Triangle](examples/triangle.png)
+![Triangle](assets/triangle.png)
 
 ```cpp
 #include "kern.h"
@@ -50,7 +50,7 @@ int main() {
 ```
 ## 3D Example
 
-![Rotating Cube](examples/cube.png)
+![Rotating Cube](assets/cube.png)
 
 ``` cpp
 #include "kern.h"
@@ -80,6 +80,11 @@ int main() {
     }
 }
 ```
+
+# API
+
+Full API: [API Reference](docs/API.md)
+
 # Installation
 ## Using CMake
 
