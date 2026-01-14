@@ -99,4 +99,13 @@ inline Vector2 screenToNDC(Vector2 screen, Vector2 size) {
     );
 }
 
+// Non-member scalar multiplication: float * Vector
+constexpr Vector2 operator*(float s, const Vector2& v) noexcept {
+    return v * s;
+}
+
+constexpr Vector3 operator*(float s, const Vector3& v) noexcept {
+    return v * s;
+}
+
 } // namespace kern

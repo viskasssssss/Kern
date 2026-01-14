@@ -67,6 +67,8 @@ namespace kern
             // else if (graphics == GraphicsAPI::Vulkan) { ... }
 
             previousTime = glfwGetTime();
+            lastFrameTime = glfwGetTime();
+            std::fill(m_prevMouseButtons, m_prevMouseButtons + MOUSE_BUTTON_COUNT, false);
 
             cast("Window and Renderer initialized");
         }
@@ -94,9 +96,18 @@ namespace kern
                 m_currKeys[i] = window && (glfwGetKey(window, i) == GLFW_PRESS);
             }
 
+            // Sample current mouse button states
+            for (int i = 0; i < MOUSE_BUTTON_COUNT; ++i)
+            {
+                m_prevMouseButtons[i] = m_currMouseButtons[i];
+                m_currMouseButtons[i] = window && (glfwGetMouseButton(window, i) == GLFW_PRESS);
+            }
+
             glfwPollEvents();
 
             double currentTime = glfwGetTime();
+            m_deltaTime = static_cast<float>(currentTime - lastFrameTime);
+            lastFrameTime = currentTime;
             frameCount++;
             // If a second has passed.
             if ( currentTime - previousTime >= 1.0 )
@@ -180,14 +191,7 @@ namespace kern
             return 0;
         }
 
-        float getDeltaTime() const
-        {
-            if (isOpen() && window)
-            {
-                return 1.0f / FPS;
-            }
-            return 0.0f;
-        }
+        float getDeltaTime() const { return m_deltaTime; }
 
         float getTime() const
         {
@@ -267,11 +271,14 @@ namespace kern
 
         bool isMouseButtonPressed(MouseButton button) const
         {
-            if (window)
-            {
-                return glfwGetMouseButton(window, static_cast<int>(button)) == GLFW_PRESS;
-            }
-            return false;
+            int btn = static_cast<int>(button);
+            return btn < MOUSE_BUTTON_COUNT && m_currMouseButtons[btn];
+        }
+
+        bool wasMouseButtonPressed(MouseButton button) const
+        {
+            int btn = static_cast<int>(button);
+            return !m_prevMouseButtons[btn] && m_currMouseButtons[btn]; // pressed now, not before
         }
 
         int getWidth() const
@@ -279,7 +286,7 @@ namespace kern
             if (window)
             {
                 int width, height;
-                glfwGetWindowSize(window, &width, &height);
+                getSize(width, height);
                 return width;
             }
             return 0;
@@ -290,7 +297,7 @@ namespace kern
             if (window)
             {
                 int width, height;
-                glfwGetWindowSize(window, &width, &height);
+                getSize(width, height);
                 return height;
             }
             return 0;
@@ -300,7 +307,71 @@ namespace kern
         {
             if (window)
             {
+                if (isFullscreen())
+                {
+                    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+                    width = mode->width;
+                    height = mode->height;
+                    return;
+                }
                 glfwGetWindowSize(window, &width, &height);
+            }
+        }
+
+        void setMouse(bool hide)
+        {
+            if (window)
+            {
+                glfwSetInputMode(window, GLFW_CURSOR, hide ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+            }
+        }
+
+        void setMousePosition(Vector2 position)
+        {
+            if (window)
+            {
+                glfwSetCursorPos(window, position.x, position.y);
+            }
+        }
+
+        bool isFocused() const
+        {
+            if (window)
+            {
+                return glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE;
+            }
+            return false;
+        }
+
+        void setFullscreen(bool fullscreen)
+        {
+            if (!window) return;
+
+            static int storedX, storedY, storedWidth, storedHeight;
+            static GLFWmonitor* monitor = nullptr;
+
+            if (fullscreen && !monitor) {
+                // Switch to fullscreen
+                monitor = glfwGetPrimaryMonitor();
+                const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+                glfwGetWindowPos(window, &storedX, &storedY);
+                glfwGetWindowSize(window, &storedWidth, &storedHeight);
+
+                glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+            }
+            else if (!fullscreen && monitor) {
+                // Restore windowed mode
+                glfwSetWindowMonitor(window, nullptr, storedX, storedY, storedWidth, storedHeight, 0);
+                monitor = nullptr;
+            }
+        }
+
+        void setVsync(bool enabled)
+        {
+            if (window)
+            {
+                glfwSwapInterval(enabled ? 1 : 0);
             }
         }
 
@@ -309,10 +380,19 @@ namespace kern
             if (window)
             {
                 int width, height;
-                glfwGetWindowSize(window, &width, &height);
+                getSize(width, height);
                 return {static_cast<float>(width), static_cast<float>(height)};
             }
             return {0, 0};
+        }
+
+        bool isFullscreen() const
+        {
+            if (window)
+            {
+                return glfwGetWindowMonitor(window) != nullptr;
+            }
+            return false;
         }
 
     private:
@@ -323,11 +403,16 @@ namespace kern
         double previousTime;
         int frameCount = 0;
         int FPS;
+        double lastFrameTime = 0.0;
+        float m_deltaTime = 0.0f;
 
         // For key state tracking
         static constexpr int KEY_COUNT = 512;
         bool m_prevKeys[KEY_COUNT] = {false};
         bool m_currKeys[KEY_COUNT] = {false};
+        static constexpr int MOUSE_BUTTON_COUNT = 8;
+        bool m_prevMouseButtons[MOUSE_BUTTON_COUNT] = {false};
+        bool m_currMouseButtons[MOUSE_BUTTON_COUNT] = {false};
     };
 
 

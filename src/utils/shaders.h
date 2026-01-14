@@ -35,10 +35,10 @@ namespace kern
     class OpenGLShaderProgram : public Shader
     {
     public:
-        OpenGLShaderProgram(const std::string& vertexSource, const std::string& fragmentSource)
+        OpenGLShaderProgram(const std::string& vertexSource, const std::string& fragmentSource, const std::string& vertexFilepath = "", const std::string& fragmentFilepath = "")
         {
-            GLuint vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
-            GLuint fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
+            GLuint vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER, vertexFilepath);
+            GLuint fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER, fragmentFilepath);
 
             if (vertexShader == 0 || fragmentShader == 0)
             {
@@ -224,8 +224,19 @@ namespace kern
             return loc;
         }
 
-        GLuint compileShader(const std::string& source, GLenum type)
+        std::string getShaderInfoLog(GLuint shader) {
+            GLint logLength;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+            if (logLength == 0) return "";
+
+            std::string log(logLength - 1, '\0');  // -1 to skip null terminator
+            glGetShaderInfoLog(shader, logLength, nullptr, log.data());
+            return log;
+        }
+
+        GLuint compileShader(const std::string& source, GLenum type, const std::string& path)
         {
+            cast("Compiling shader: '" + path + "'", false);
             GLuint shader = glCreateShader(type);
 
             // Explicitly ensure null termination
@@ -239,12 +250,13 @@ namespace kern
             glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
             if (!success)
             {
-                GLchar infoLog[512];
-                glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-                cast("Shader compile error: " + std::string(infoLog), DebugLevel::Error);
+                cast(" [FAILED]", DebugLevel::Everything, false);
+                cast("Shader compile error: " + getShaderInfoLog(shader), DebugLevel::Error);
                 glDeleteShader(shader);
                 return 0;
             }
+
+            cast(" [OK]", DebugLevel::Everything, false);
 
             return shader;
         }
@@ -257,13 +269,13 @@ namespace kern
 
         if (vertexSource.empty()) {
             cast("Vertex shader source empty", kern::DebugLevel::Error);
-            return OpenGLShaderProgram("", ""); // Invalid
+            return OpenGLShaderProgram("", "", vertexFilepath, fragmentFilepath); // Invalid
         }
         if (fragmentSource.empty()) {
             cast("Fragment shader source empty", kern::DebugLevel::Error);
-            return OpenGLShaderProgram("", "");
+            return OpenGLShaderProgram("", "", vertexFilepath, fragmentFilepath);
         }
 
-        return OpenGLShaderProgram(vertexSource, fragmentSource);
+        return OpenGLShaderProgram(vertexSource, fragmentSource, vertexFilepath, fragmentFilepath);
     }
 }

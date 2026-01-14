@@ -1,25 +1,47 @@
 cmake_minimum_required(VERSION 3.15)
-project(Kern)
+project(Kern LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Пути к include
-include_directories(src)
-include_directories(src/utils)
-include_directories(src/backends)
-include_directories(src/backends/OpenGL)  # только OpenGL бэкенд на старте
+# =========================
+# KERN SOURCES
+# =========================
 
-# Список исходников
-set(SRC_FILES
+add_library(kern STATIC
     src/utils/shaders.cpp
     src/utils/stb.cpp
     src/utils/vectors.cpp
     src/backends/OpenGL/openglrenderer.cpp
 )
 
-# Собираем статическую библиотеку
-add_library(kern STATIC ${SRC_FILES})
+# =========================
+# INCLUDE PATHS
+# =========================
 
-# Заголовки для пользователя
-target_include_directories(kern PUBLIC src)
+target_include_directories(kern
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/libraries/include
+)
+
+# =========================
+# GLAD (C FILE)
+# =========================
+
+add_library(glad STATIC
+    libraries/lib/glad.c
+)
+
+target_include_directories(glad
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/libraries/include
+)
+
+# =========================
+# LINK
+# =========================
+
+target_link_libraries(kern
+    PUBLIC glad
+)

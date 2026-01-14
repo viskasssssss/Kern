@@ -35,7 +35,7 @@ OpenGLRenderer::OpenGLRenderer(GLFWwindow* window, int width, int height)
                   return kern::OpenGLShaderProgram("", "");
               }
 
-              return kern::OpenGLShaderProgram(triVertexSource, triFragmentSource);
+              return kern::OpenGLShaderProgram(triVertexSource, triFragmentSource, "shaders/OpenGL/tri.vert", "shaders/OpenGL/tri.frag");
           }()
       )
 {
@@ -53,6 +53,7 @@ void OpenGLRenderer::clear()
 {
     if (window)
     {
+        updateViewport();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 }
@@ -200,5 +201,18 @@ void OpenGLRenderer::renderCircle(kern::Vector2 center, float radius, kern::Colo
         kern::Vector2 p2 = center + kern::Vector2(cos(a1), sin(a1)) * radius;
 
         renderTri(p0, p1, p2, color);
+    }
+}
+
+void OpenGLRenderer::updateViewport()
+{
+    int w, h;
+    glfwGetWindowSize(static_cast<GLFWwindow*>(window), &w, &h);
+
+    if (w != width || h != height)
+    {
+        width = w;
+        height = h;
+        glViewport(0, 0, width, height);
     }
 }

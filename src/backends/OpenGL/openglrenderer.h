@@ -53,4 +53,5 @@ private:
     mutable std::unordered_map<size_t, GLuint> vaoCache;
 
     void bindVertexData(const void* vertices, size_t vertexCount, const kern::VertexLayout& layout);
+    void updateViewport();
 };

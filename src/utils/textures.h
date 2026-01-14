@@ -14,6 +14,16 @@
 
 namespace kern {
 
+enum class Filter {
+    Linear,
+    Nearest
+};
+
+enum class TextureWrap {
+    Repeat,
+    Clamp
+};
+
 class Texture {
 public:
     virtual ~Texture() = default;
@@ -23,6 +33,7 @@ public:
     virtual uint32_t getWidth() const = 0;
     virtual uint32_t getHeight() const = 0;
     virtual unsigned int getID() const = 0;
+    virtual void setFilterMode(kern::Filter mode) = 0;
 };
 
 class OpenGLTexture2D : public Texture {
@@ -88,6 +99,21 @@ public:
     void unbind() const override
     {
         if (m_ID) {
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+    }
+
+    void setFilterMode(kern::Filter mode) override
+    {
+        if (m_ID) {
+            glBindTexture(GL_TEXTURE_2D, m_ID);
+            if (mode == kern::Filter::Linear) {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            } else {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            }
             glBindTexture(GL_TEXTURE_2D, 0);
         }
     }
