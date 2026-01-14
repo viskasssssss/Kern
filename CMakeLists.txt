@@ -30,7 +30,7 @@ target_include_directories(kern
 # =========================
 
 add_library(glad STATIC
-    libraries/lib/glad.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/glad.c
 )
 
 target_include_directories(glad
