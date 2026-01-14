@@ -46,3 +46,15 @@ target_include_directories(glad
 target_link_libraries(kern
     PUBLIC glad
 )
+
+# =========================
+# SHADERS
+# =========================
+
+file(GLOB_RECURSE SHADER_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/*"
+)
+
+foreach(SHADER_FILE ${SHADER_FILES})
+    file(COPY ${SHADER_FILE} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/src/shaders")
+endforeach()
