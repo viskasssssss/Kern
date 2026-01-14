@@ -51,10 +51,15 @@ target_link_libraries(kern
 # SHADERS
 # =========================
 
+set(SHADER_DEST_DIR "${CMAKE_BINARY_DIR}/src/shaders/OpenGL")
+
+# Shaders List
 file(GLOB KERN_SHADERS "src/shaders/OpenGL/*")
+
 foreach(shader ${KERN_SHADERS})
-    add_custom_command(TARGET kern POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:kern_test>/src/shaders/OpenGL
-        COMMAND ${CMAKE_COMMAND} -E copy ${shader} $<TARGET_FILE_DIR:kern_test>/src/shaders/OpenGL
+    add_custom_command(
+        TARGET kern POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_DEST_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy ${shader} ${SHADER_DEST_DIR}
     )
 endforeach()
