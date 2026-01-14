@@ -13,6 +13,7 @@ add_library(kern STATIC
     src/utils/stb.cpp
     src/utils/vectors.cpp
     src/backends/OpenGL/openglrenderer.cpp
+    src/utils/vertexlayout.cpp
 )
 
 # =========================
