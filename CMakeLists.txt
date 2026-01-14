@@ -51,11 +51,13 @@ target_link_libraries(kern
 # SHADERS
 # =========================
 
-file(GLOB_RECURSE SHADER_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/*"
-)
+file(GLOB_RECURSE SHADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/OpenGL/*")
 
 foreach(SHADER_FILE ${SHADER_FILES})
-    file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src" "${SHADER_FILE}")
-    configure_file(${SHADER_FILE} "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/src/${REL_PATH}" COPYONLY)
+    get_filename_component(FILE_NAME ${SHADER_FILE} NAME)
+    add_custom_command(TARGET kern POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${SHADER_FILE}
+        $<TARGET_FILE_DIR:kern_test>/src/shaders/OpenGL/${FILE_NAME}
+    )
 endforeach()
