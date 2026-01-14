@@ -46,3 +46,15 @@ target_include_directories(glad
 target_link_libraries(kern
     PUBLIC glad
 )
+
+# =========================
+# SHADERS
+# =========================
+
+file(GLOB KERN_SHADERS "src/shaders/OpenGL/*")
+foreach(shader ${KERN_SHADERS})
+    add_custom_command(TARGET kern POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:kern_test>/src/shaders/OpenGL
+        COMMAND ${CMAKE_COMMAND} -E copy ${shader} $<TARGET_FILE_DIR:kern_test>/src/shaders/OpenGL
+    )
+endforeach()
